@@ -10,7 +10,13 @@ import lws
 
 
 def load_wav(path):
-    return librosa.core.load(path, sr=hparams.sample_rate)[0]
+    # Handle different librosa versions
+    try:
+        # Newer librosa versions
+        return librosa.load(path, sr=hparams.sample_rate)[0]
+    except AttributeError:
+        # Older librosa versions
+        return librosa.core.load(path, sr=hparams.sample_rate)[0]
 
 
 def save_wav(wav, path):
@@ -119,9 +125,56 @@ def _linear_to_mel(spectrogram):
 
 def _build_mel_basis():
     assert hparams.fmax <= hparams.sample_rate // 2
-    return librosa.filters.mel(hparams.sample_rate, hparams.fft_size,
-                               fmin=hparams.fmin, fmax=hparams.fmax,
-                               n_mels=hparams.num_mels)
+    # Handle different librosa versions for mel filter creation
+    try:
+        # Newer librosa versions - all parameters as keyword arguments
+        return librosa.filters.mel(sr=hparams.sample_rate, n_fft=hparams.fft_size,
+                                   fmin=hparams.fmin, fmax=hparams.fmax,
+                                   n_mels=hparams.num_mels)
+    except TypeError:
+        try:
+            # Older librosa versions might accept positional arguments
+            return librosa.filters.mel(hparams.sample_rate, hparams.fft_size,
+                                       fmin=hparams.fmin, fmax=hparams.fmax,
+                                       n_mels=hparams.num_mels)
+        except TypeError:
+            # Fallback method - manually create mel filters
+            return _create_mel_basis_manual()
+
+
+def _create_mel_basis_manual():
+    """Manual mel filter bank creation as fallback"""
+    n_fft = hparams.fft_size
+    sample_rate = hparams.sample_rate
+    fmin = hparams.fmin
+    fmax = hparams.fmax
+    n_mels = hparams.num_mels
+
+    # Create mel frequency points
+    mel_min = 2595.0 * np.log10(1.0 + fmin / 700.0)
+    mel_max = 2595.0 * np.log10(1.0 + fmax / 700.0)
+    mel_points = np.linspace(mel_min, mel_max, n_mels + 2)
+
+    # Convert to Hz
+    hz_points = 700.0 * (10.0**(mel_points / 2595.0) - 1.0)
+
+    # Convert to FFT bin numbers
+    bin_points = np.floor((n_fft + 1) * hz_points / sample_rate).astype(int)
+
+    # Create filter bank
+    mel_basis = np.zeros((n_mels, n_fft // 2 + 1))
+    for i in range(n_mels):
+        left = bin_points[i]
+        center = bin_points[i + 1]
+        right = bin_points[i + 2]
+
+        # Create triangular filter
+        for j in range(left, center):
+            mel_basis[i, j] = (j - left) / (center - left)
+        for j in range(center, right):
+            mel_basis[i, j] = (right - j) / (right - center)
+
+    return mel_basis
 
 
 def _amp_to_db(x):

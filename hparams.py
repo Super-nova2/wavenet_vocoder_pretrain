@@ -4,8 +4,62 @@ import numpy as np
 # NOTE: If you want full control for model architecture. please take a look
 # at the code and change whatever you want. Some hyper parameters are hardcoded.
 
+# Custom HParams class to replace tf.contrib.training.HParams
+class HParams:
+    def __init__(self, **kwargs):
+        self._values = {}
+        for key, value in kwargs.items():
+            self._values[key] = value
+
+    def add_hparam(self, name, value):
+        self._values[name] = value
+
+    def get(self, name, default=None):
+        return self._values.get(name, default)
+
+    def set_hparam(self, name, value):
+        self._values[name] = value
+
+    def values(self):
+        return self._values
+
+    def parse_json(self, json_str):
+        import json
+        data = json.loads(json_str)
+        for key, value in data.items():
+            self.set_hparam(key, value)
+
+    def parse(self, hparams_str):
+        # Simple parsing for hparams string
+        if not hparams_str:
+            return
+        pairs = hparams_str.split(',')
+        for pair in pairs:
+            if '=' in pair:
+                key, value = pair.split('=', 1)
+                # Try to convert to appropriate type
+                try:
+                    if '.' in value:
+                        value = float(value)
+                    else:
+                        value = int(value)
+                except ValueError:
+                    pass  # keep as string
+                self.set_hparam(key.strip(), value)
+
+    def __getattr__(self, name):
+        if name in self._values:
+            return self._values[name]
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super().__setattr__(name, value)
+        else:
+            self._values[name] = value
+
 # Default hyperparameters:
-hparams = tf.contrib.training.HParams(
+hparams = HParams(
     name="wavenet_vocoder",
 
     # Convenient model builder

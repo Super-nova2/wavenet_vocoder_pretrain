@@ -186,10 +186,20 @@ if __name__ == "__main__":
 
     # Load checkpoint
     print("Load checkpoint from {}".format(checkpoint_path))
+    # Handle map_location parameter for different PyTorch versions
     if use_cuda:
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, weights_only=False)
     else:
-        checkpoint = torch.load(checkpoint_path, map_location=lambda storage, loc: storage)
+        try:
+            # PyTorch 2.6+ with weights_only parameter
+            checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
+        except TypeError:
+            try:
+                # Newer PyTorch versions without weights_only parameter
+                checkpoint = torch.load(checkpoint_path, map_location='cpu')
+            except TypeError:
+                # Older PyTorch versions may expect callable
+                checkpoint = torch.load(checkpoint_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(checkpoint["state_dict"])
     checkpoint_name = splitext(basename(checkpoint_path))[0]
 
@@ -200,7 +210,23 @@ if __name__ == "__main__":
     waveform = wavegen(model, length, c=c, g=speaker_id, initial_value=initial_value, fast=True)
 
     # save
-    librosa.output.write_wav(dst_wav_path, waveform, sr=hparams.sample_rate)
+    # Handle different librosa versions
+    try:
+        # Newer librosa versions
+        sf.write(dst_wav_path, waveform, hparams.sample_rate)
+    except (NameError, AttributeError):
+        try:
+            # Older librosa versions with output module
+            librosa.output.write_wav(dst_wav_path, waveform, sr=hparams.sample_rate)
+        except AttributeError:
+            # Fallback method using soundfile
+            try:
+                import soundfile as sf
+                sf.write(dst_wav_path, waveform, hparams.sample_rate)
+            except ImportError:
+                # Final fallback using scipy
+                from scipy.io import wavfile
+                wavfile.write(dst_wav_path, hparams.sample_rate, waveform.astype(np.int16))
 
     print("Finished! Check out {} for generated audio samples.".format(dst_dir))
     sys.exit(0)

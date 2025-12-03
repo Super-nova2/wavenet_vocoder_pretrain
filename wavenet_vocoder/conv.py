@@ -12,7 +12,17 @@ class Conv1d(nn.Conv1d):
         super().__init__(*args, **kwargs)
         self.clear_buffer()
         self._linearized_weight = None
-        self.register_backward_hook(self._clear_linearized_weight)
+        # Handle different PyTorch versions for backward hooks
+        try:
+            # PyTorch >= 1.8
+            self.register_full_backward_hook(self._clear_linearized_weight)
+        except AttributeError:
+            try:
+                # PyTorch < 1.8 but >= 1.4
+                self.register_backward_hook(self._clear_linearized_weight)
+            except AttributeError:
+                # Very old PyTorch versions
+                pass
 
     def incremental_forward(self, input):
         # input: (B, T, C)
