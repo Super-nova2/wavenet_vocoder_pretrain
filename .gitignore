@@ -1,9 +1,9 @@
 foobar*
 pretrained_models
 notebooks
-
+*.pth
 checkpoints*
-log
+logs
 generated
 data
 text
