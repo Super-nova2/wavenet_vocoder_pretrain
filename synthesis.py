@@ -25,7 +25,7 @@ from os.path import dirname, join, basename, splitext
 import torch
 import numpy as np
 from nnmnkwii import preprocessing as P
-from keras.utils import np_utils
+from keras.utils import to_categorical
 from tqdm import tqdm
 import librosa
 
@@ -107,7 +107,7 @@ def wavegen(model, length=None, c=None, g=None, initial_value=None,
 
     if is_mulaw_quantize(hparams.input_type):
         assert initial_value >= 0 and initial_value < hparams.quantize_channels
-        initial_input = np_utils.to_categorical(
+        initial_input = to_categorical(
             initial_value, num_classes=hparams.quantize_channels).astype(np.float32)
         initial_input = torch.from_numpy(initial_input).view(
             1, 1, hparams.quantize_channels)

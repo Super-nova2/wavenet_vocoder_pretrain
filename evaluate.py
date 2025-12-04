@@ -23,7 +23,7 @@ from os.path import dirname, join, basename, splitext
 import torch
 import numpy as np
 from nnmnkwii import preprocessing as P
-from keras.utils import np_utils
+from keras.utils import to_categorical
 from tqdm import tqdm
 import librosa
 

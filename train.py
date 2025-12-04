@@ -47,7 +47,7 @@ from nnmnkwii.datasets import FileSourceDataset, FileDataSource
 import librosa.display
 
 from sklearn.model_selection import train_test_split
-from keras.utils import np_utils
+from keras.utils import to_categorical
 from tensorboardX import SummaryWriter
 from matplotlib import cm
 from warnings import warn
@@ -420,7 +420,7 @@ def collate_fn(batch):
     # (B, T, C)
     # pad for time-axis
     if is_mulaw_quantize(hparams.input_type):
-        x_batch = np.array([_pad_2d(np_utils.to_categorical(
+        x_batch = np.array([_pad_2d(to_categorical(
             x[0], num_classes=hparams.quantize_channels),
             max_input_len) for x in batch], dtype=np.float32)
     else:
@@ -513,7 +513,7 @@ def eval_model(global_step, writer, device, model, y, c, g, input_lengths, eval_
 
     # (C,)
     if is_mulaw_quantize(hparams.input_type):
-        initial_input = np_utils.to_categorical(
+        initial_input = to_categorical(
             initial_value, num_classes=hparams.quantize_channels).astype(np.float32)
         initial_input = torch.from_numpy(initial_input).view(
             1, 1, hparams.quantize_channels)
