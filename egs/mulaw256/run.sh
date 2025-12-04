@@ -5,7 +5,7 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root=~/data/LJSpeech-1.1/wavs/
+db_root=/data/LJSpeech-1.1/wavs/
 
 spk="lj"
 dumpdir=dump
