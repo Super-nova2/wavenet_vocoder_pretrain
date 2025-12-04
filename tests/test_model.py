@@ -12,6 +12,7 @@ from tqdm import tqdm
 from os.path import join, dirname, exists
 from functools import partial
 from nose.plugins.attrib import attr
+import soundfile as sf
 
 from wavenet_vocoder.modules import ResidualConv1dGLU
 from wavenet_vocoder import WaveNet
@@ -221,7 +222,7 @@ def test_local_conditioning_upsample_correctness():
 def test_global_conditioning_with_embedding_correctness():
     # condition by mean power
     x, x_org, c = _test_data(returns_power=True)
-    g = c.mean(axis=-1, keepdims=True).astype(np.int)
+    g = c.mean(axis=-1, keepdims=True).astype(np.int64)
     model = build_compact_model(gin_channels=16, n_speakers=256,
                                 use_speaker_embedding=True)
     assert not model.local_conditioning_enabled()
@@ -290,7 +291,7 @@ def test_global_conditioning_correctness():
 @attr("local_and_global_conditioning")
 def test_global_and_local_conditioning_correctness():
     x, x_org, c = _test_data(returns_power=True)
-    g = c.mean(axis=-1, keepdims=True).astype(np.int)
+    g = c.mean(axis=-1, keepdims=True).astype(np.int64)
     model = build_compact_model(
         cin_channels=1, gin_channels=16, use_speaker_embedding=True, n_speakers=256)
     assert model.local_conditioning_enabled()
@@ -407,6 +408,6 @@ def test_incremental_forward_correctness():
 
     save_audio = False
     if save_audio:
-        librosa.output.write_wav("target.wav", x_org, sr=sr)
-        librosa.output.write_wav("online.wav", y_online, sr=sr)
-        librosa.output.write_wav("inference.wav", y_inference, sr=sr)
+        sf.write("target.wav", x_org, sr)
+        sf.write("online.wav", y_online, sr)
+        sf.write("inference.wav", y_inference, sr)

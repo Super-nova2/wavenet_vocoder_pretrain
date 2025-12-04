@@ -25,6 +25,7 @@ import numpy as np
 from nnmnkwii import preprocessing as P
 from tqdm import tqdm
 import librosa
+import soundfile as sf
 
 from wavenet_vocoder.util import is_mulaw_quantize, is_mulaw, is_raw
 
@@ -243,7 +244,7 @@ if __name__ == "__main__":
     waveform = batch_wavegen(model, length, c=c, g=speaker_id, initial_value=initial_value, fast=True)
 
     # save
-    librosa.output.write_wav(dst_wav_path, waveform, sr=hparams.sample_rate)
+    sf.write(dst_wav_path, waveform, hparams.sample_rate)
 
     print("Finished! Check out {} for generated audio samples.".format(dst_dir))
     sys.exit(0)
