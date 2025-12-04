@@ -6,6 +6,7 @@ log
 generated
 data
 text
+*.pth
 
 # Created by https://www.gitignore.io
 
