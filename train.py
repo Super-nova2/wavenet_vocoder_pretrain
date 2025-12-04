@@ -540,14 +540,21 @@ def time_string():
     return datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
+def _waveplot(y, sr):
+    # librosa>=0.10 renamed waveplot -> waveshow
+    if hasattr(librosa.display, "waveshow"):
+        return librosa.display.waveshow(y, sr=sr)
+    return librosa.display.waveplot(y, sr=sr)
+
+
 def save_waveplot(path, y_hat, y_target):
     sr = hparams.sample_rate
 
     plt.figure(figsize=(16, 6))
     plt.subplot(2, 1, 1)
-    librosa.display.waveplot(y_target, sr=sr)
+    _waveplot(y_target, sr=sr)
     plt.subplot(2, 1, 2)
-    librosa.display.waveplot(y_hat, sr=sr)
+    _waveplot(y_hat, sr=sr)
     plt.tight_layout()
     plt.savefig(path, format="png")
     plt.close()

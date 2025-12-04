@@ -397,13 +397,13 @@ def test_incremental_forward_correctness():
 
     plt.figure(figsize=(16, 10))
     plt.subplot(4, 1, 1)
-    librosa.display.waveplot(x_org, sr=sr)
+    (librosa.display.waveshow if hasattr(librosa.display, "waveshow") else librosa.display.waveplot)(x_org, sr=sr)
     plt.subplot(4, 1, 2)
-    librosa.display.waveplot(y_offline, sr=sr)
+    (librosa.display.waveshow if hasattr(librosa.display, "waveshow") else librosa.display.waveplot)(y_offline, sr=sr)
     plt.subplot(4, 1, 3)
-    librosa.display.waveplot(y_online, sr=sr)
+    (librosa.display.waveshow if hasattr(librosa.display, "waveshow") else librosa.display.waveplot)(y_online, sr=sr)
     plt.subplot(4, 1, 4)
-    librosa.display.waveplot(y_inference, sr=sr)
+    (librosa.display.waveshow if hasattr(librosa.display, "waveshow") else librosa.display.waveplot)(y_inference, sr=sr)
     plt.show()
 
     save_audio = False

@@ -20,9 +20,10 @@ from hparams import hparams
 
 
 def preprocess(mod, in_dir, out_root, num_workers):
-    os.makedirs(out_dir, exist_ok=True)
-    metadata = mod.build_from_path(in_dir, out_dir, num_workers, tqdm=tqdm)
-    write_metadata(metadata, out_dir)
+    # keep output dir naming consistent inside this helper
+    os.makedirs(out_root, exist_ok=True)
+    metadata = mod.build_from_path(in_dir, out_root, num_workers, tqdm=tqdm)
+    write_metadata(metadata, out_root)
 
 
 def write_metadata(metadata, out_dir):

@@ -133,10 +133,12 @@ class WaveNet(nn.Module):
                 cin_channels=cin_channels,
                 gin_channels=gin_channels)
             self.conv_layers.append(conv)
+        # avoid in-place activations to keep autograd happy with custom
+        # functions used in the residual blocks
         self.last_conv_layers = nn.ModuleList([
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=False),
             Conv1d1x1(skip_out_channels, skip_out_channels),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=False),
             Conv1d1x1(skip_out_channels, out_channels),
         ])
 
@@ -198,11 +200,11 @@ class WaveNet(nn.Module):
 
         # Feed data to network
         x = self.first_conv(x)
-        skips = 0
+        skips = None
         for f in self.conv_layers:
             x, h = f(x, c, g_bct)
-            skips += h
-        skips *= math.sqrt(1.0 / len(self.conv_layers))
+            skips = h if skips is None else skips + h  # avoid in-place accumulation
+        skips = skips * math.sqrt(1.0 / len(self.conv_layers))
 
         x = skips
         for f in self.last_conv_layers:
