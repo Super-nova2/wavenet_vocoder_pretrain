@@ -40,7 +40,7 @@
     ]
   },
   "gin_channels": -1,
-  "n_speakers": 7,
+  "n_speakers": 1,
   "pin_memory": true,
   "num_workers": 2,
   "batch_size": 8,
@@ -55,15 +55,15 @@
     "anneal_rate": 0.5,
     "anneal_interval": 200000
   },
-  "max_train_steps": 500000,
+  "max_train_steps": 50000,
   "nepochs": 2000,
   "clip_thresh": -1,
   "max_time_sec": null,
   "max_time_steps": 10240,
   "exponential_moving_average": true,
   "ema_decay": 0.9999,
-  "checkpoint_interval": 100000,
-  "train_eval_interval": 100000,
+  "checkpoint_interval": 10000,
+  "train_eval_interval": 10000,
   "test_eval_epoch_interval": 50,
   "save_optimizer_state": true
 }
